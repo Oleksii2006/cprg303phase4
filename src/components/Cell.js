@@ -1,12 +1,14 @@
 import * as React from 'react';
-import { StyleSheet ,View,Text} from 'react-native'
-export default function Cell({row,col,isBomb,isFlipped,value}){
+import { StyleSheet ,View,Text,Pressable} from 'react-native'
+export default function Cell({row,col,isBomb,isFlipped,value,handlePress}){
     return(
-        <View styles = {styles.container}>
-            <Text styles = {styles.text}>
-                {}bomb
-            </Text>
-        </View>
+        <Pressable onPress={() => handlePress(row,col)}>
+            <View styles = {[styles.container, !isFlipped && styles.isFlipped]}>
+                <Text styles = {styles.text}>
+                    {isFlipped && (isBomb ? " bomb" : value)}
+                </Text>
+            </View>
+        </Pressable>
     )
 
 }
@@ -20,8 +22,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center'
     },
+    isFlipped:
+    {
+        backgroundColor: 'lightblue',
+    },
     text:
     {
         fontSize:22,
+        fontWeight: '800',
     },
 })
