@@ -1,62 +1,80 @@
-export function createBoard(width,height,bombs){
-    const matrix = [];
-    for(let  row = 0; row < height; row ++){
-        const newRow = [];
-        for(let col = 0; col < width; col ++){
-            newRow.push(createCell(row, col))
-        }
-        matrix.push(newRow);
+import { createCell } from "./createCell";
+
+export function createBoard(width, height, bombs) {
+  const board = [];
+
+  for (let r = 0; r < height; r++) {
+    const row = [];
+    for (let c = 0; c < width; c++) {
+      row.push(createCell(r, c));
     }
-    insertBombs(matrix,bombs);
-    increaseNums(matrix);
-    return matrix;
+    board.push(row);
+  }
+
+  insertBombs(board, bombs);
+  increaseNums(board);
+
+  return board;
 }
 
+export function regenerateSafeBoard(oldBoard, safeRow, safeCol, bombs) {
+  const height = oldBoard.length;
+  const width = oldBoard[0].length;
 
-function increaseNums(matrix){
-    for (let row = 0; row < matrix.length; row ++){
-        for(let col = 0; col < matrix[row].length;col ++){
-            if(matrix[row][col].isBomb){
-                const neighbors = getNeighbors(row,col,matrix);
+  let board;
+  do {
+    board = createBoard(width, height, bombs);
+  } while (board[safeRow][safeCol].isBomb);
 
-                for(const neighbor of neighbors){
-                    const[row,col] = neighbor;
-                    matrix[row][col].value +=1;
-                }
-            }
-        }
-    }
+  return board;
 }
 
-export function getNeighbors(row, col, matrix) {
-  const height = matrix.length;
-  const width = matrix[row].length;
+function increaseNums(board) {
+  for (let r = 0; r < board.length; r++) {
+    for (let c = 0; c < board[r].length; c++) {
+      if (board[r][c].isBomb) {
+        for (const [nr, nc] of getNeighbors(r, c, board)) {
+          board[nr][nc].value += 1;
+        }
+      }
+    }
+  }
+}
+
+export function getNeighbors(row, col, board) {
   const neighbors = [];
 
-  if (row - 1 >= 0) neighbors.push([row - 1, col]); 
-  if (row + 1 < height) neighbors.push([row + 1, col]); 
-  if (col + 1 < width) neighbors.push([row, col + 1]); 
-  if (col - 1 >= 0) neighbors.push([row, col - 1]);
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
 
-  if (row - 1 >= 0 && col - 1 >= 0) neighbors.push([row - 1, col - 1]);
-  if (row - 1 >= 0 && col + 1 < width) neighbors.push([row - 1, col + 1]); 
-  if (row + 1 < height && col + 1 < width) neighbors.push([row + 1, col + 1]); 
-  if (row + 1 < height && col - 1 >= 0) neighbors.push([row + 1, col - 1]); 
+      const r = row + dr;
+      const c = col + dc;
+
+      if (
+        r >= 0 &&
+        r < board.length &&
+        c >= 0 &&
+        c < board[0].length
+      ) {
+        neighbors.push([r, c]);
+      }
+    }
+  }
 
   return neighbors;
 }
 
+function insertBombs(board, bombs) {
+  let placed = 0;
 
+  while (placed < bombs) {
+    const r = Math.floor(Math.random() * board.length);
+    const c = Math.floor(Math.random() * board[0].length);
 
-function insertBombs(matrix,bombs){
-    let bombsToInsert = bombs;
-    while(bombsToInsert > 0){
-        let row = Math.floor(Math.random() * matrix.length);
-        let col = Math.floor(Math.random() * matrix[0].length);
-
-        if(!matrix[row][col].isBomb){
-            matrix[row][col].isBomb = true;
-        }
-        bombsToInsert --;
+    if (!board[r][c].isBomb) {
+      board[r][c].isBomb = true;
+      placed++;
     }
+  }
 }
